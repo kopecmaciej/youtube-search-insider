@@ -8,8 +8,8 @@ import json
 class TextCleaner:
 
     def __init__(self):
-        self.trasactions_dir = 'transcriptions'
-        self.processed_dir = 'processed'
+        self.trasactions_dir = 'data/transcriptions'
+        self.processed_dir = 'data/processed'
 
         nltk.download('punkt')
         nltk.download('stopwords')

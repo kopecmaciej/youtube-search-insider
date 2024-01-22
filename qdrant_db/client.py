@@ -2,7 +2,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
 from typing import Iterable
 
-from config import QdrantConfig
+from qdrant_db.config import QdrantConfig
 
 class Qdrant:
 

@@ -4,17 +4,21 @@ from youtube_search import YoutubeSearch
 import json
 import pandas as pd
 
-raw_dir = 'raw'
-
 class YoutubeSearcher:
 
     def __init__(self, search_phrase):
+        self.raw_dir = 'data/raw'
         self.search_phrase = search_phrase
 
     def get_url_ids(self):
+        if self.search_phrase is None:
+            raise ValueError("search_phrase must be set")
+
+        print("Search phrase: {}".format(self.search_phrase))
         results = YoutubeSearch(self.search_phrase, max_results=20).to_json()
         videos = pd.DataFrame(json.loads(results)['videos'])
         
+        print("Videos found: {}".format(videos['title']))
         videos['views'] = videos['views'].apply(lambda x: int(re.sub(r'\D', '', x)))
 
         videos['duration'] = videos['duration'].apply(self._duration_to_minutes)
@@ -32,7 +36,7 @@ class YoutubeSearcher:
 
         for video in filtered_videos.iterrows():
             id = uuid.uuid4().hex
-            open(f'{raw_dir}/{id}.json', 'w').write(json.dumps(video[1].to_dict()))
+            open(f'{self.raw_dir}/{id}.json', 'w').write(json.dumps(video[1].to_dict()))
 
         return filtered_videos[['title', 'video_id']].values.tolist()
 

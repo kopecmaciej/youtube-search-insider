@@ -7,7 +7,7 @@ class Tokenizer:
 
     def __init__(self):
         self.encoder = SentenceTransformer('all-MiniLM-L6-v2', device="cuda")
-        self.processed_dir = "processed"
+        self.processed_dir = "data/processed"
 
     def tokenize(self, client: Qdrant):
         texts = []
@@ -34,7 +34,7 @@ class Tokenizer:
         client.upload_points(
             points=[
                 PointStruct(
-                    vector=encoder.encode(obj['text']), #type: ignore
+                    vector=self.encoder.encode(obj['text']), #type: ignore
                     payload={"name": obj['name']},
                     id=i,
                 )

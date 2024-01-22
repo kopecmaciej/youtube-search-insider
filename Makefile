@@ -1,5 +1,5 @@
 clean:
-	rm -rf ./transcriptions/* ./processed/* ./tokenized/* ./raw/* 
+	rm -rf ./data/transcriptions/* ./data/processed/* ./data/tokenized/* ./data/raw/* 
 
 run:
 	python3 main.py
