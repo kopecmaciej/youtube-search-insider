@@ -24,9 +24,4 @@ venv.bak/
 .pyre/
 
 .pytype/
-
-videos/
-raw/
-processed/
-tokenized/
-transcriptions/
+data/
