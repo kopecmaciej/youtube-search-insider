@@ -36,7 +36,7 @@ class Qdrant:
         self.client.delete_collection(collection_name=self.collection)
 
     def upload_points(self, points: Iterable[PointStruct]):
-        print(f"Uploading {points.__sizeof__} points to collection {self.collection}")
+        print(f"Uploading points to collection {self.collection}")
         self.client.upload_points(
             collection_name=self.collection,
             points=points

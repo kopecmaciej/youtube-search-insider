@@ -18,8 +18,7 @@ class YoutubeSearcher:
         results = YoutubeSearch(self.search_phrase, max_results=20).to_json()
         videos = pd.DataFrame(json.loads(results)['videos'])
         
-        videos['views'] = videos['views'].apply(lambda x: re.sub(r'\D', '', x) if x.strip() else 0).astype(int)
-
+        videos['views'] = videos['views'].apply(self._process_views)
         videos['duration'] = videos['duration'].apply(self._duration_to_minutes)
 
         filtered_videos = videos[(videos['duration'] <= 90) & (videos['duration'] >= 5) & (videos['views'] >= 3000)]
@@ -30,7 +29,7 @@ class YoutubeSearcher:
         if filtered_videos.empty:
             return None
 
-        filtered_videos['video_id'] = videos['url_suffix'].apply(self._extract_video_id)
+        filtered_videos.loc[:, 'video_id'] = videos['url_suffix'].apply(self._extract_video_id)
         filtered_videos = filtered_videos.dropna(subset=['video_id'])
 
         for video in filtered_videos.iterrows():
@@ -51,3 +50,7 @@ class YoutubeSearcher:
     def _extract_video_id(self, url):
         match = re.search(r'(?<=v=)[^&]+', url)
         return match.group(0) if match else None
+
+    def _process_views(self,x):
+        x_str = str(x) if pd.notna(x) else ''
+        return int(re.sub(r'\D', '', x_str)) if re.search(r'\d', x_str) else 0

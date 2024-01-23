@@ -11,27 +11,39 @@ from ai.whisper import WhisperClient
 
 async def main(rabbitmq_client: RabbitMQClient):
     await rabbitmq_client.connect()
-    search_phrase = OpenAIClient().generate_youtube_topic()
-    if search_phrase is None:
-        print("No search phrase generated")
-        exit(1)
 
     whisper_client = WhisperClient()
-
-    videos = YoutubeSearcher(search_phrase).get_url_ids()
-    if videos is None:
-        print("No videos found")
-        exit(1)
-
     transcriptor = Transcriptor(rabbitmq_client)
-    for video in videos:
-      await transcriptor.transcript_video(video[0], video[1])
+    text_cleaner = TextCleaner()
+    tokenizer = Tokenizer()
 
-    TextCleaner().clean_files()
+    run = False
+    while True:
+        search_phrase = OpenAIClient().generate_youtube_topic()
+        if search_phrase is None:
+            print("No search phrase generated")
+            exit(1)
 
-    Tokenizer().tokenize(Qdrant())
+        videos = YoutubeSearcher(search_phrase).get_url_ids()
+        if videos is None:
+            print("No videos found")
+            continue
 
-    await rabbitmq_client.consume(whisper_client.transcribe_video)
+        for video in videos:
+            try:
+                await transcriptor.transcript_video(video[0], video[1])
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                continue
+
+        text_cleaner.clean_files()
+        tokenizer.tokenize(Qdrant())
+
+        if not run:
+            asyncio.create_task(rabbitmq_client.consume(whisper_client.transcribe_video))
+            run = True
+
+        await asyncio.sleep(15)  # Wait 15 seconds before next iteration
 
 if __name__ == '__main__':
     asyncio.run(main(RabbitMQClient()))
