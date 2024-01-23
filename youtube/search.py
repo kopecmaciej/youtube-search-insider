@@ -6,7 +6,7 @@ import pandas as pd
 
 class YoutubeSearcher:
 
-    def __init__(self, search_phrase):
+    def __init__(self, search_phrase: str):
         self.raw_dir = 'data/raw'
         self.search_phrase = search_phrase
 

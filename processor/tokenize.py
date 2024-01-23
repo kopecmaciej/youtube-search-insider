@@ -35,10 +35,13 @@ class Tokenizer:
             points=[
                 PointStruct(
                     vector=self.encoder.encode(obj['text']), #type: ignore
-                    payload={"name": obj['name']},
+                    payload={"name": self._remove_extension(obj['name'])},
                     id=i,
                 )
                 for i, obj in enumerate(texts)
             ],
         )
 
+
+    def _remove_extension(self, name):
+        return name.split(".")[0]
