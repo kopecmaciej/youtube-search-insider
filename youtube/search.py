@@ -18,8 +18,7 @@ class YoutubeSearcher:
         results = YoutubeSearch(self.search_phrase, max_results=20).to_json()
         videos = pd.DataFrame(json.loads(results)['videos'])
         
-        print("Videos found: {}".format(videos['title']))
-        videos['views'] = videos['views'].apply(lambda x: int(re.sub(r'\D', '', x)))
+        videos['views'] = videos['views'].apply(lambda x: re.sub(r'\D', '', x) if x.strip() else 0).astype(int)
 
         videos['duration'] = videos['duration'].apply(self._duration_to_minutes)
 

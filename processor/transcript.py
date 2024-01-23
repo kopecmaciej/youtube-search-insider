@@ -1,5 +1,3 @@
-import asyncio
-
 from youtube_search import json
 import youtube_transcript_api
 
@@ -19,7 +17,11 @@ class Transcriptor:
             transcript = transcript_list.find_transcript(['en'])
         except youtube_transcript_api.NoTranscriptFound:
             print(f"No English transcript found for video {video_id}")
-            await self.rabbitmq_client.send_url_to_queue(video_id)
+            self.rabbitmq_client.send_url_to_queue(video_id)
+            return
+        except youtube_transcript_api.TranscriptsDisabled:
+            print(f"Transcript disabled for video {video_id}")
+            self.rabbitmq_client.send_url_to_queue(video_id)
             return
         except Exception as e:
             print(f"An error occurred: {e}")
