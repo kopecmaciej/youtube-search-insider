@@ -22,6 +22,7 @@ class Qdrant:
         return self.client.get_collection(collection_name=self.collection)
     
     def create_collection(self, vector_size):
+        print(f"Creating collection {self.collection} with vector size {vector_size}")
         self.client.create_collection(
             collection_name=self.collection,
             vectors_config=VectorParams(
@@ -31,9 +32,11 @@ class Qdrant:
         )
 
     def delete_collection(self):
+        print(f"Deleting collection {self.collection}")
         self.client.delete_collection(collection_name=self.collection)
 
     def upload_points(self, points: Iterable[PointStruct]):
+        print(f"Uploading {points.__sizeof__} points to collection {self.collection}")
         self.client.upload_points(
             collection_name=self.collection,
             points=points

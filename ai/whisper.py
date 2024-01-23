@@ -7,7 +7,6 @@ import youtube.download as download
 class WhisperClient:
 
     def __init__(self):
-        self.model = whisper.load_model("small")
         self.transcriptios_dir = 'transcriptions'
 
     def transcribe_video(self, video_path):
@@ -18,6 +17,7 @@ class WhisperClient:
             print(f"File {video_path} does not exist")
             download.download_youtube_audio(video_path)
 
+        self.model = whisper.load_model("small")
         result = self.model.transcribe(video_path)
 
         result_json = json.dumps(result, ensure_ascii=False)
