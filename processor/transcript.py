@@ -10,8 +10,6 @@ class Transcriptor:
         self.rabbitmq_client = rabbitmq_client
 
     async def transcript_video(self, name: str, video_id: str):
-        transcript_list = youtube_transcript_api.YouTubeTranscriptApi.list_transcripts(video_id)
-
         try:
             transcript_list = youtube_transcript_api.YouTubeTranscriptApi.list_transcripts(video_id)
             transcript = transcript_list.find_transcript(['en'])

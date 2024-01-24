@@ -7,24 +7,27 @@ import youtube.download as download
 class WhisperClient:
 
     def __init__(self):
-        self.transcriptios_dir = 'transcriptions'
+        self.transcriptios_dir = 'data/transcriptions'
+        self.video_dir = 'data/videos'
 
-    def transcribe_video(self, video_path):
-        print(f"Transcribing video {video_path}")
+    def transcribe_video(self, video_id):
+        print(f"Transcribing video {video_id}")
+
+        video_path = f"{self.video_dir}/{video_id}.mp3"
 
         file = os.path.isfile(video_path)
         if not file:
-            print(f"File {video_path} does not exist")
-            download.download_youtube_audio(video_path)
+            print(f"File {video_path} not found, downloading audio")
+            download.download_youtube_audio(video_id)
 
         self.model = whisper.load_model("small")
-        result = self.model.transcribe(video_path)
+        result = self.model.transcribe(f"{self.video_dir}/{video_id}.mp3")
 
         result_json = json.dumps(result, ensure_ascii=False)
 
-        video_path = video_path.split('/')[-1].split('.')[0]
+        video_id = video_id.split('/')[-1].split('.')[0]
 
-        path = f"{self.transcriptios_dir}/{video_path}.json"
+        path = f"{self.transcriptios_dir}/{video_id}.json"
 
         print(f"Saving transcription to {path}")
 
