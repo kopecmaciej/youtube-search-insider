@@ -9,16 +9,16 @@ class Tokenizer:
         self.encoder = SentenceTransformer('all-MiniLM-L6-v2', device="cuda")
         self.processed_dir = "data/processed"
 
-    def tokenize(self, client: Qdrant):
+    def tokenize(self, client: Qdrant, chunk_size: int = 1000):
         texts = []
 
         for file in os.listdir(self.processed_dir):
             with open(f"{self.processed_dir}/{file}", "r") as f:
                 text = f.read()
-                obj = {}
-                obj['name'] = file
-                obj['text'] = text
-                texts.append(obj)
+                for i in range(0, len(text), chunk_size):
+                    chunk = text[i:i+chunk_size]
+                    obj = {'name': file, 'text': chunk}
+                    texts.append(obj)
 
         print("Loaded texts {}".format(len(texts)))
 
