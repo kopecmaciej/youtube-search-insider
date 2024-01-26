@@ -39,6 +39,8 @@ class YoutubeSearcher:
         return filtered_videos[['title', 'video_id']].values.tolist()
 
     def _duration_to_minutes(self, duration):
+        if duration is None or duration is int:
+            return 0
         parts = list(map(int, duration.split(':')))
         if len(parts) == 3:
             return parts[0] * 60 + parts[1] + parts[2] / 60

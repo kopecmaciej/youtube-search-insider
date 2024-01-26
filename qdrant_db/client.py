@@ -9,8 +9,12 @@ class Qdrant:
     def __init__(self):
         config = QdrantConfig()
         host, port = config.get_host(), config.get_port()
-        self.client = QdrantClient(host=host, port=port)
-        self.collection = config.get_collection()
+        try:
+            self.client = QdrantClient(host=host, port=port)
+            self.collection = config.get_collection()
+        except Exception as e:
+            print(f"Error connecting to Qdrant: {e}")
+            raise e
 
     def get_client(self):
         return self.client
@@ -23,13 +27,17 @@ class Qdrant:
     
     def create_collection(self, vector_size):
         print(f"Creating collection {self.collection} with vector size {vector_size}")
-        self.client.create_collection(
-            collection_name=self.collection,
-            vectors_config=VectorParams(
-                size=vector_size,
-                distance=Distance.COSINE
-            ),
-        )
+        try:
+            self.client.create_collection(
+                collection_name=self.collection,
+                vectors_config=VectorParams(
+                    size=vector_size,
+                    distance=Distance.COSINE
+                ),
+            )
+        except Exception as e:
+            print(f"Error creating collection: {e}")
+            pass
 
     def delete_collection(self):
         print(f"Deleting collection {self.collection}")

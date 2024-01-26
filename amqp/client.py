@@ -25,6 +25,7 @@ class RabbitMQClient:
 
 
     async def consume(self, callback) -> None:
+        print("Consuming from {}".format(self.queue.name))
         async with self.queue.iterator() as queue_iter:
             async for message in queue_iter:
                 async with message.process():

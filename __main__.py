@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 from qdrant_db.client import Qdrant
 from ai.open_ai import OpenAIClient
@@ -16,6 +17,10 @@ async def main(rabbitmq_client: RabbitMQClient):
     transcriptor = Transcriptor(rabbitmq_client)
     text_cleaner = TextCleaner()
     tokenizer = Tokenizer()
+
+    if os.environ.get('ONLY_TRANSCRIBE') == 'true':
+        await asyncio.create_task(rabbitmq_client.consume(whisper_client.transcribe_video))
+
 
     run = False
     while True:
@@ -37,7 +42,13 @@ async def main(rabbitmq_client: RabbitMQClient):
                 continue
 
         text_cleaner.clean_files()
-        tokenizer.tokenize(Qdrant())
+        try:
+            qdrant = Qdrant()
+        except Exception as e:
+            print(f"Error connecting to Qdrant: {e}")
+            exit(1)
+        
+        tokenizer.tokenize(qdrant)
 
         if not run:
             asyncio.create_task(rabbitmq_client.consume(whisper_client.transcribe_video))
