@@ -1,6 +1,7 @@
 import asyncio
-import os
+import __init__
 
+from utils.env import get_env
 from qdrant_db.client import Qdrant
 from ai.open_ai import OpenAIClient
 from youtube.search import YoutubeSearcher
@@ -8,21 +9,18 @@ from processor.transcript import Transcriptor
 from processor.cleaner import TextCleaner
 from processor.tokenize import Tokenizer
 from amqp.client import RabbitMQClient
-from ai.whisper import WhisperClient
 
 async def main(rabbitmq_client: RabbitMQClient):
-    await rabbitmq_client.connect()
+    try:
+        await rabbitmq_client.connect()
+    except Exception as e:
+        print(f"Error while connecting to RabbitMQ, err: {e}")
+        exit(1)
 
-    whisper_client = WhisperClient()
     transcriptor = Transcriptor(rabbitmq_client)
     text_cleaner = TextCleaner()
     tokenizer = Tokenizer()
 
-    if os.environ.get('ONLY_TRANSCRIBE') == 'true':
-        await asyncio.create_task(rabbitmq_client.consume(whisper_client.transcribe_video))
-
-
-    run = False
     while True:
         search_phrase = OpenAIClient().generate_youtube_topic()
         if search_phrase is None:
@@ -50,11 +48,12 @@ async def main(rabbitmq_client: RabbitMQClient):
         
         tokenizer.tokenize(qdrant)
 
-        if not run:
-            asyncio.create_task(rabbitmq_client.consume(whisper_client.transcribe_video))
-            run = True
+        ## add delay between scraping
+        delay = get_env('SCRAPING_DELAY', 15)
 
-        await asyncio.sleep(15)  # Wait 15 seconds before next iteration
+        await asyncio.sleep(int(delay))
 
 if __name__ == '__main__':
-    asyncio.run(main(RabbitMQClient()))
+    rabbitmq_client = RabbitMQClient()
+    asyncio.run(main(rabbitmq_client))
+
