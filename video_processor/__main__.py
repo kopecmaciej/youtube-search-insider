@@ -1,8 +1,8 @@
 import asyncio
 import __init__
 
-from amqp.client import RabbitMQClient
-from procesor.whisper import WhisperClient
+from shared.amqp.client import RabbitMQClient
+from processor.whisper import WhisperClient
 
 async def main(rabbitmq_client: RabbitMQClient):
     try:

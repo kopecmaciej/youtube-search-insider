@@ -1,7 +1,7 @@
 from youtube_search import json
 import youtube_transcript_api
 
-from amqp.client import RabbitMQClient
+from shared.amqp.client import RabbitMQClient
 
 class Transcriptor:
 

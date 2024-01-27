@@ -2,7 +2,7 @@ import os
 import whisper
 import json
 
-import procesor.download as download
+import processor.download as download
 
 class WhisperClient:
 
