@@ -1,7 +1,7 @@
 import aio_pika
 import asyncio
 
-from amqp.config import RabbitMQConfig
+from shared.amqp.config import RabbitMQConfig
 
 class RabbitMQClient:
 

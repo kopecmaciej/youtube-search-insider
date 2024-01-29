@@ -1,4 +1,4 @@
-from utils.env import get_env
+from shared.utils.env import get_env
 
 class RabbitMQConfig:
 

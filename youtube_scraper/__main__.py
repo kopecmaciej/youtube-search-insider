@@ -1,14 +1,14 @@
 import asyncio
 import __init__
 
-from utils.env import get_env
+from shared.utils.env import get_env
 from qdrant_db.client import Qdrant
 from ai.open_ai import OpenAIClient
 from youtube.search import YoutubeSearcher
 from processor.transcript import Transcriptor
 from processor.cleaner import TextCleaner
 from processor.tokenize import Tokenizer
-from amqp.client import RabbitMQClient
+from shared.amqp.client import RabbitMQClient
 
 async def main(rabbitmq_client: RabbitMQClient):
     try:
@@ -30,7 +30,7 @@ async def main(rabbitmq_client: RabbitMQClient):
         videos = YoutubeSearcher(search_phrase).get_url_ids()
         if videos is None:
             print("No videos found")
-            continue
+            exit(1)
 
         for video in videos:
             try:
