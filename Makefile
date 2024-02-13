@@ -9,7 +9,7 @@ run-scraper:
 	python3 youtube_scraper
 
 run-procesor:
-	python3 video_procesor
+	python3 video_processor
 
 build-scraper:
 	docker build -t youtube-scraper -f $(SCRAPER_DOCKERFILE) .

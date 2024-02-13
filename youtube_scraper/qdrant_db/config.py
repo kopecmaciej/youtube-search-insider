@@ -7,6 +7,10 @@ class QdrantConfig:
         if url is None:
             raise Exception("QDRANT_URL is not set")
         self.url = url
+        api_key = os.getenv("QDRANT_API_KEY")
+        if api_key is None:
+            raise Exception("QDRANT_API_KEY is not set")
+        self.api_key = api_key
         collection = os.getenv("QDRANT_COLLECTION")
         if collection is None:
             raise Exception("QDRANT_COLLECTION is not set")
@@ -14,6 +18,9 @@ class QdrantConfig:
 
     def get_url(self):
         return self.url
+
+    def get_api_key(self):
+        return self.api_key
 
     def get_collection(self):
         return self.collection

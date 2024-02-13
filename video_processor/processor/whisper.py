@@ -1,14 +1,15 @@
 import os
-import whisper
 import json
 
+import whisper
 import processor.download as download
+
 
 class WhisperClient:
 
     def __init__(self):
-        self.transcriptios_dir = 'data/transcriptions'
-        self.video_dir = 'data/videos'
+        self.transcriptios_dir = "data/transcriptions"
+        self.video_dir = "data/videos"
 
     def transcribe_video(self, video_id):
         print(f"Transcribing video {video_id}")
@@ -25,17 +26,17 @@ class WhisperClient:
 
         result_json = json.dumps(result, ensure_ascii=False)
 
-        video_id = video_id.split('/')[-1].split('.')[0]
+        video_id = video_id.split("/")[-1].split(".")[0]
 
         path = f"{self.transcriptios_dir}/{video_id}.json"
 
         print(f"Saving transcription to {path}")
 
-        with open(path, 'w') as f:
+        with open(path, "w") as f:
             f.write(result_json)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
 
     args = sys.argv

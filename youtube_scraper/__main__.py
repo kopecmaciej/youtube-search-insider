@@ -10,6 +10,7 @@ from processor.cleaner import TextCleaner
 from processor.tokenize import Tokenizer
 from shared.amqp.client import RabbitMQClient
 
+
 async def main(rabbitmq_client: RabbitMQClient):
     try:
         await rabbitmq_client.connect()
@@ -45,15 +46,15 @@ async def main(rabbitmq_client: RabbitMQClient):
         except Exception as e:
             print(f"Error connecting to Qdrant: {e}")
             exit(1)
-        
+
         tokenizer.tokenize(qdrant)
 
         ## add delay between scraping
-        delay = get_env('SCRAPING_DELAY', 15)
+        delay = get_env("SCRAPING_DELAY", 15)
 
         await asyncio.sleep(int(delay))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     rabbitmq_client = RabbitMQClient()
     asyncio.run(main(rabbitmq_client))
-
