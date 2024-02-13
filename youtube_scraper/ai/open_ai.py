@@ -5,6 +5,7 @@ from openai import OpenAI
 
 load_dotenv()
 
+
 class OpenAIClient:
 
     def __init__(self):
@@ -21,15 +22,32 @@ class OpenAIClient:
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a YouTube video topic searcher, create short video topic that will find the most videos possible, max 5 words.",
+                    "content": "You are a YouTube video topic searcher, create short video topic that will find the most videos possible, max 5 words. Your input will be a list of 3 topics",
                 },
                 {
                     "role": "user",
                     "content": prompt,
-                }
+                },
             ],
             model="gpt-3.5-turbo",
         )
 
-        return  response.choices[0].message.content
+        return response.choices[0].message.content
 
+    def generate_new_topics(self, topics):
+        system_message = """
+        You are a YouTube video topic searcher, create 3 main, general topics that will we key phrases for the search of proper video topics.
+        The answer should be in the form of a list, separated by commas.
+        """
+        response = self.client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": system_message},
+                {
+                    "role": "user",
+                    "content": f"Create a list of 3 topics that will be used to search for YouTube video topics. The topics are: {topics}",
+                },
+            ],
+            model="gpt-3.5-turbo",
+        )
+
+        return response.choices[0].message.content
