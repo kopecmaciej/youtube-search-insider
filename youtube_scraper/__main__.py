@@ -28,12 +28,17 @@ async def main(rabbitmq_client: RabbitMQClient):
             print("No search phrase generated")
             exit(1)
 
-        videos = YoutubeSearcher(search_phrase).get_url_ids()
-        if videos is None:
-            print("No videos found")
-            exit(1)
+        search_phrases = search_phrase.split(",")
 
-        for video in videos:
+        founded_videos_ids = []
+        for search_phrase in search_phrases:
+            videos_ids = YoutubeSearcher(search_phrase).get_url_ids()
+            if videos_ids is None or len(videos_ids) == 0:
+                print("No videos found for search phrase: {}".format(search_phrase))
+                continue
+            founded_videos_ids.extend(videos_ids)
+
+        for video in founded_videos_ids:
             try:
                 await transcriptor.transcript_video(video[0], video[1])
             except Exception as e:
