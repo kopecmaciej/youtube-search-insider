@@ -17,3 +17,5 @@ build-scraper:
 requirements:
 	pipreqs . --force --ignore .venv
 
+test:
+	python3 -m unittest discover -p "*_test.py" -v 
