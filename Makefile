@@ -18,4 +18,5 @@ requirements:
 	pipreqs . --force --ignore .venv
 
 test:
-	python3 -m unittest discover -p "*_test.py" -v 
+	python3 -m unittest discover ./youtube_scraper -v
+	python3 -m unittest discover ./video_processor -v
