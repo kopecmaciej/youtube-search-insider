@@ -1,5 +1,4 @@
 import re
-import uuid
 from youtube_search import YoutubeSearch
 import json
 import pandas as pd
@@ -19,9 +18,9 @@ class YoutubeSearcher:
         videos = pd.DataFrame(json.loads(results)['videos'])
         
         videos['views'] = videos['views'].apply(self._get_views)
-        videos['duration'] = videos['duration'].apply(self._duration_to_minutes)
+        videos['duration'] = videos['duration'].apply(self._duration_to_seconds)
 
-        filtered_videos = videos[(videos['duration'] <= 90) & (videos['duration'] >= 5) & (videos['views'] >= 3000)]
+        filtered_videos = videos[(videos['duration'] <= 90*60) & (videos['duration'] >= 5*60) & (videos['views'] >= 3000)]
 
         if not isinstance(filtered_videos, pd.DataFrame):
             raise ValueError("videos must be a DataFrame")
@@ -29,33 +28,19 @@ class YoutubeSearcher:
         if filtered_videos.empty:
             return None
 
-        filtered_videos.loc[:, 'video_id'] = videos['url_suffix'].apply(self._extract_video_id)
-        filtered_videos = filtered_videos.dropna(subset=['video_id'])
+        for _, test in filtered_videos.iterrows():
+            id = test['id']
+            open(f'{self.raw_dir}/{id}.json', 'w').write(json.dumps(test.to_dict()))
 
-        for video in filtered_videos.iterrows():
-            id = uuid.uuid4().hex
-            open(f'{self.raw_dir}/{id}.json', 'w').write(json.dumps(video[1].to_dict()))
+        return filtered_videos[['title', 'id']].values.tolist()
 
-        return filtered_videos[['title', 'video_id']].values.tolist()
-
-    def _duration_to_minutes(self, duration):
+    def _duration_to_seconds(self, duration):
         if duration is None or type(duration) != str:
             return 0
-        parts = list(map(int, duration.split(':')))
-        if parts[0] == 0:
-            parts = parts[1:]
-        if len(parts) == 3:
-            return parts[0] * 60 + parts[1] + parts[2] / 60
-        elif len(parts) == 2:
-            return parts[0] + parts[1] / 60
-        elif len(parts) == 1:
-            return parts[0] / 60
-
-    def _extract_video_id(self, url):
-        if url is None or type(url) != str:
-            return None
-        match = re.search(r'(?<=v=)[^&]+', url)
-        return match.group(0) if match else None
+        ## duration is in the format 'H:MM:SS' or 'MM:SS'
+        if len(duration.split(':')) == 2:
+            duration = '0:' + duration
+        return sum(x * int(t) for x, t in zip([3600, 60, 1], duration.split(":")))
 
     def _get_views(self,x):
         x_str = str(x) if pd.notna(x) else ''

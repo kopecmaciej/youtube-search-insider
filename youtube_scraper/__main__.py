@@ -1,5 +1,6 @@
-import asyncio
 import __init__
+import asyncio
+import argparse
 
 from shared.utils.env import get_env
 from qdrant_db.client import Qdrant
@@ -12,6 +13,12 @@ from shared.amqp.client import RabbitMQClient
 
 
 async def main(rabbitmq_client: RabbitMQClient):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--search_phrase", type=str, required=False)
+    args = parser.parse_args()
+
+    search_phrase = args.search_phrase
+
     try:
         await rabbitmq_client.connect()
     except Exception as e:
@@ -23,10 +30,11 @@ async def main(rabbitmq_client: RabbitMQClient):
     tokenizer = Tokenizer()
 
     while True:
-        search_phrase = OpenAIClient().generate_youtube_topic()
         if search_phrase is None:
-            print("No search phrase generated")
-            exit(1)
+            search_phrase = OpenAIClient().generate_youtube_topic()
+            if search_phrase is None:
+                print("No search phrase generated")
+                exit(1)
 
         search_phrases = search_phrase.split(",")
 

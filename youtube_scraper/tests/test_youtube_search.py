@@ -4,8 +4,7 @@ from youtube.search import YoutubeSearcher
 
 class TestYoutubeSearch(unittest.TestCase):
     def setUp(self):
-        self._duration_to_minutes = YoutubeSearcher("test_phrase")._duration_to_minutes
-        self._extract_video_id = YoutubeSearcher("test_phrase")._extract_video_id
+        self._duration_to_minutes = YoutubeSearcher("test_phrase")._duration_to_seconds
         self._get_views = YoutubeSearcher("test_phrase")._get_views
 
     ### _duration_to_minutes tests ###
@@ -33,16 +32,6 @@ class TestYoutubeSearch(unittest.TestCase):
     def test_duration_invalid_format(self):
         with self.assertRaises(ValueError):
             self._duration_to_minutes('invalid:input')
-
-    ### _extract_video_id tests ###
-    def test_video_id_none_input(self):
-        self.assertEqual(self._extract_video_id(None), None)
-
-    def test_video_id_valid_input(self):
-        self.assertEqual(self._extract_video_id('https://www.youtube.com/watch?v=123456789'), '123456789')
-
-    def test_video_id_invalid_input(self):
-        self.assertEqual(self._extract_video_id('invalid:input'), None)
 
     ### _get_views tests ###
     def test_views_none_input(self):
