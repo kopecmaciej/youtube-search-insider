@@ -13,11 +13,16 @@ from shared.amqp.client import RabbitMQClient
 
 
 async def main(rabbitmq_client: RabbitMQClient):
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--search_phrase", type=str, required=False)
-    args = parser.parse_args()
+    parser = argparse.ArgumentParser(prog="Youtube Scraper")
 
-    search_phrase = args.search_phrase
+    parser.add_argument("-s", "--search_phrase", type=str)
+    parser.add_argument(
+        "--languages",
+        type=lambda x: x.split(","),
+        help="List of languages to transcript, e.g. en,es,fr",
+        default=["en"],
+    )
+    args = parser.parse_args()
 
     try:
         await rabbitmq_client.connect()
@@ -30,6 +35,8 @@ async def main(rabbitmq_client: RabbitMQClient):
     tokenizer = Tokenizer()
 
     while True:
+        search_phrase = args.search_phrase
+
         if search_phrase is None:
             search_phrase = OpenAIClient().generate_youtube_topic()
             if search_phrase is None:
@@ -48,7 +55,7 @@ async def main(rabbitmq_client: RabbitMQClient):
 
         for video in founded_videos_ids:
             try:
-                await transcriptor.transcript_video(video[0], video[1])
+                await transcriptor.transcript_video(video[0], video[1], args.languages)
             except Exception as e:
                 print(f"An error occurred: {e}")
                 continue
