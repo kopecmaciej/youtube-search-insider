@@ -1,26 +1,33 @@
-import os
+import uuid
 from qdrant_client.models import PointStruct
 from sentence_transformers import SentenceTransformer
 from qdrant_db.client import Qdrant
 
+
 class Tokenizer:
 
     def __init__(self):
-        self.encoder = SentenceTransformer('all-MiniLM-L6-v2', device="cuda")
+        self.encoder = SentenceTransformer("all-MiniLM-L6-v2", device="cuda")
         self.processed_dir = "data/processed"
 
-    def tokenize(self, client: Qdrant, chunk_size: int = 1000):
-        texts = []
+    def tokenize(
+        self,
+        client: Qdrant,
+        names: list[str],
+        transcriptions: list[str],
+        chunk_size: int = 1000,
+    ):
 
-        for file in os.listdir(self.processed_dir):
-            with open(f"{self.processed_dir}/{file}", "r") as f:
-                text = f.read()
-                for i in range(0, len(text), chunk_size):
-                    chunk = text[i:i+chunk_size]
-                    obj = {'name': file, 'text': chunk}
-                    texts.append(obj)
+        objects: list[dict[str, str]] = []
 
-        print("Loaded texts {}".format(len(texts)))
+        for iter, transcription in enumerate(transcriptions):
+            name = names[iter]
+            for i in range(0, len(transcription), chunk_size):
+                chunk = transcription[i : i + chunk_size]
+                obj = {"name": name, "text": chunk}
+                objects.append(obj)
+
+        print("Loaded texts {}".format(len(transcriptions)))
 
         try:
             coll = client.get_collection()
@@ -34,14 +41,11 @@ class Tokenizer:
         client.upload_points(
             points=[
                 PointStruct(
-                    vector=self.encoder.encode(obj['text']), #type: ignore
-                    payload={"name": self._remove_extension(obj['name'])},
-                    id=i,
+                    vector=self.encoder.encode(obj["text"]),  # type: ignore
+                    payload={"name": obj["name"]},
+                    id=str(uuid.uuid4()),
                 )
-                for i, obj in enumerate(texts)
+                for _, obj in enumerate(objects)
             ],
         )
 
-
-    def _remove_extension(self, name):
-        return name.split(".")[0]

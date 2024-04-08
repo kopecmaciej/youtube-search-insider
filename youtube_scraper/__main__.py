@@ -1,6 +1,5 @@
 import __init__
 import asyncio
-import argparse
 
 from shared.utils.env import get_env
 from qdrant_db.client import Qdrant
@@ -10,19 +9,11 @@ from processor.transcript import Transcriptor
 from processor.cleaner import TextCleaner
 from processor.tokenize import Tokenizer
 from shared.amqp.client import RabbitMQClient
+from shell.flags import Flags
 
 
 async def main(rabbitmq_client: RabbitMQClient):
-    parser = argparse.ArgumentParser(prog="Youtube Scraper")
-
-    parser.add_argument("-s", "--search_phrase", type=str)
-    parser.add_argument(
-        "--languages",
-        type=lambda x: x.split(","),
-        help="List of languages to transcript, e.g. en,es,fr",
-        default=["en"],
-    )
-    args = parser.parse_args()
+    flags = Flags().parse_args()
 
     try:
         await rabbitmq_client.connect()
@@ -35,7 +26,9 @@ async def main(rabbitmq_client: RabbitMQClient):
     tokenizer = Tokenizer()
 
     while True:
-        search_phrase = args.search_phrase
+        search_phrase = flags.search_phrase
+        if flags.search_phrases is not None:
+            search_phrase = ",".join(flags.search_phrases)
 
         if search_phrase is None:
             search_phrase = OpenAIClient().generate_youtube_topic()
@@ -53,21 +46,27 @@ async def main(rabbitmq_client: RabbitMQClient):
                 continue
             founded_videos_ids.extend(videos_ids)
 
+        cleaned = []
         for video in founded_videos_ids:
             try:
-                await transcriptor.transcript_video(video[0], video[1], args.languages)
+                transcript = await transcriptor.transcript_video(
+                    video[1], flags.languages
+                )
+                if transcript != "":
+                    clean = text_cleaner.clean_transcripts([transcript], [video[1]])
+                    cleaned.extend(clean)
+
             except Exception as e:
                 print(f"An error occurred: {e}")
                 continue
 
-        text_cleaner.clean_files()
         try:
             qdrant = Qdrant()
         except Exception as e:
             print(f"Error connecting to Qdrant: {e}")
             exit(1)
 
-        tokenizer.tokenize(qdrant)
+        tokenizer.tokenize(qdrant, [video[0] for video in founded_videos_ids], cleaned)
 
         ## add delay between scraping
         delay = get_env("SCRAPING_DELAY", 15)

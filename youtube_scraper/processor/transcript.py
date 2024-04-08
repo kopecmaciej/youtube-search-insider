@@ -1,7 +1,8 @@
-from youtube_search import json
+import json
 import youtube_transcript_api
 
 from shared.amqp.client import RabbitMQClient
+from shared.utils.file import write_json
 
 
 class Transcriptor:
@@ -10,7 +11,7 @@ class Transcriptor:
         self.transcript_dir = "data/transcriptions"
         self.rabbitmq_client = rabbitmq_client
 
-    async def transcript_video(self, name: str, video_id: str, languages: list[str]):
+    async def transcript_video(self, video_id: str, languages: list[str]) -> str:
         print(f"Transcripting video {video_id} with languages {languages}")
         try:
             transcript_list = (
@@ -20,14 +21,14 @@ class Transcriptor:
         except youtube_transcript_api.NoTranscriptFound:
             print(f"No transcript found for video {video_id}")
             self.rabbitmq_client.send_url_to_queue(video_id)
-            return
+            return ""
         except youtube_transcript_api.TranscriptsDisabled:
             print(f"Transcript disabled for video {video_id}")
             self.rabbitmq_client.send_url_to_queue(video_id)
-            return
+            return ""
         except Exception as e:
             print(f"An error occurred: {e}")
-            return
+            return ""
 
         transcript_text = transcript.fetch()
 
@@ -39,8 +40,9 @@ class Transcriptor:
 
         json_data = json.dumps({"text": text}, ensure_ascii=False)
 
-        with open(self._file_name(name), "w") as file:
-            file.write(json_data)
+        write_json(json_data, self._file_name(video_id))
+
+        return text
 
     def _file_name(self, name: str):
         return f"{self.transcript_dir}/{name}.json"
