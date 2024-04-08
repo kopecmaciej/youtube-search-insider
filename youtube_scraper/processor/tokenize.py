@@ -42,10 +42,9 @@ class Tokenizer:
             points=[
                 PointStruct(
                     vector=self.encoder.encode(obj["text"]),  # type: ignore
-                    payload={"name": obj["name"]},
+                    payload={"name": obj["name"], "text": obj["text"]},
                     id=str(uuid.uuid4()),
                 )
                 for _, obj in enumerate(objects)
             ],
         )
-
