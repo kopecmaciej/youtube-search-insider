@@ -6,13 +6,12 @@ from sentence_transformers.SentenceTransformer import os
 
 
 class Tokenizer:
-    collection_name = "processed_transcriptions"
-
     def __init__(self, chunk_size: int = 1000, chunk_overlap: int = 40):
         self.embeddings = SentenceTransformerEmbeddings()
         self.processed_dir = "data/processed"
         self.qdrant_api_key = os.getenv("QDRANT_API_KEY")
         self.qdrant_url = os.getenv("QDRANT_URL")
+        self.collection_name = os.getenv("QDRANT_COLLECTION_NAME") or "youtube_transcription"
         self.qdrant = None
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap

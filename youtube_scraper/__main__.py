@@ -2,7 +2,6 @@ import __init__
 import asyncio
 
 from shared.utils.env import get_env
-from qdrant_db.client import Qdrant
 from ai.open_ai import OpenAIClient
 from youtube.search import YoutubeSearcher
 from processor.transcript import Transcriptor
@@ -59,12 +58,6 @@ async def main(rabbitmq_client: RabbitMQClient):
             except Exception as e:
                 print(f"An error occurred: {e}")
                 continue
-
-        try:
-            qdrant = Qdrant()
-        except Exception as e:
-            print(f"Error connecting to Qdrant: {e}")
-            exit(1)
 
         tokenizer.tokenize(cleaned_transcript)
 
