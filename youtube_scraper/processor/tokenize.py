@@ -1,8 +1,8 @@
+import os
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores.qdrant import Qdrant
 from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_core.documents import Document
-from sentence_transformers.SentenceTransformer import os
 
 
 class Tokenizer:
