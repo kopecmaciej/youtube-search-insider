@@ -46,15 +46,15 @@ async def main(rabbitmq_client: RabbitMQClient):
                 continue
             founded_videos_ids.extend(videos_ids)
 
-        cleaned = []
+        cleaned_transcript = []
         for video in founded_videos_ids:
             try:
                 transcript = await transcriptor.transcript_video(
                     video[1], flags.languages
                 )
-                if transcript != "":
-                    clean = text_cleaner.clean_transcripts([transcript], [video[1]])
-                    cleaned.extend(clean)
+                if transcript is not None:
+                    cleaned = text_cleaner.clean_transcript(transcript)
+                    cleaned_transcript.extend(cleaned)
 
             except Exception as e:
                 print(f"An error occurred: {e}")
@@ -66,7 +66,7 @@ async def main(rabbitmq_client: RabbitMQClient):
             print(f"Error connecting to Qdrant: {e}")
             exit(1)
 
-        tokenizer.tokenize(qdrant, [video[0] for video in founded_videos_ids], cleaned)
+        tokenizer.tokenize(cleaned_transcript)
 
         ## add delay between scraping
         delay = get_env("SCRAPING_DELAY", 15)
