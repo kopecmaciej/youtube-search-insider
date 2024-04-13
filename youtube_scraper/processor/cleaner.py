@@ -1,5 +1,6 @@
 import os
 import re
+from langchain_core.documents import Document
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -18,24 +19,16 @@ class TextCleaner:
 
         self.stop_word = set(stopwords.words("english"))
 
-    def clean_transcripts(
-        self, transcriptions: list[str], video_ids: list[str]
-    ) -> list[str]:
-        all_cleaned = []
-        for i, transcription in enumerate(transcriptions):
-            cleaned = self._clean_and_tokenize_text(transcription)
-            all_cleaned.append(cleaned)
+    def clean_transcript(self, video_docs: list[Document]) -> list[Document]:
+        cleaned_docs: list[Document] = []
+        for _, video_doc in enumerate(video_docs):
+            text = video_doc.page_content
+            video_doc.page_content = self._clean_and_tokenize_text(text)
+            cleaned_docs.append(video_doc)
 
-            procPath = os.path.join(self.processed_dir, video_ids[i])
-            procPath = procPath.replace(".json", ".txt")
-            mode = "w" if os.path.exists(procPath) else "x"
-            with open_or_create(procPath, mode) as f:
-                f.write(cleaned)
-                f.close()
+        return cleaned_docs
 
-        return all_cleaned
-
-    def _clean_and_tokenize_text(self, text):
+    def _clean_and_tokenize_text(self, text: str) -> str:
         text = re.sub(r"\d+", "", text)
         text = re.sub(r"[^\w\s]", "", text)
         text = " ".join(text.split()).lower()

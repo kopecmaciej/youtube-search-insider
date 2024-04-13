@@ -1,8 +1,8 @@
-import json
+from langchain_core.documents import Document
 import youtube_transcript_api
 
+from langchain_community.document_loaders.youtube import YoutubeLoader
 from shared.amqp.client import RabbitMQClient
-from shared.utils.file import write_json
 
 
 class Transcriptor:
@@ -11,38 +11,24 @@ class Transcriptor:
         self.transcript_dir = "data/transcriptions"
         self.rabbitmq_client = rabbitmq_client
 
-    async def transcript_video(self, video_id: str, languages: list[str]) -> str:
-        print(f"Transcripting video {video_id} with languages {languages}")
+    async def transcript_video(
+        self, video_id: str, languages: list[str]
+    ) -> list[Document] | None:
         try:
-            transcript_list = (
-                youtube_transcript_api.YouTubeTranscriptApi.list_transcripts(video_id)
+            loader = YoutubeLoader(
+                video_id=video_id, language=languages, add_video_info=True
             )
-            transcript = transcript_list.find_transcript(languages)
+            video_doc = loader.load()
+            print(f"Transcripting video {video_id} with languages {languages}")
+            return video_doc
         except youtube_transcript_api.NoTranscriptFound:
             print(f"No transcript found for video {video_id}")
             self.rabbitmq_client.send_url_to_queue(video_id)
-            return ""
+            return None
         except youtube_transcript_api.TranscriptsDisabled:
             print(f"Transcript disabled for video {video_id}")
             self.rabbitmq_client.send_url_to_queue(video_id)
-            return ""
+            return None
         except Exception as e:
             print(f"An error occurred: {e}")
-            return ""
-
-        transcript_text = transcript.fetch()
-
-        text = ""
-
-        for entry in transcript_text:
-            entry["text"] = entry["text"].replace("\n", " ")
-            text += entry["text"] + " "
-
-        json_data = json.dumps({"text": text}, ensure_ascii=False)
-
-        write_json(json_data, self._file_name(video_id))
-
-        return text
-
-    def _file_name(self, name: str):
-        return f"{self.transcript_dir}/{name}.json"
+            return None

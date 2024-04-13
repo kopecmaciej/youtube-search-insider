@@ -1,50 +1,41 @@
-import uuid
-from qdrant_client.models import PointStruct
-from sentence_transformers import SentenceTransformer
-from qdrant_db.client import Qdrant
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores.qdrant import Qdrant
+from langchain_community.embeddings import SentenceTransformerEmbeddings
+from langchain_core.documents import Document
+from sentence_transformers.SentenceTransformer import os
 
 
 class Tokenizer:
-
-    def __init__(self):
-        self.encoder = SentenceTransformer("all-MiniLM-L6-v2", device="cuda")
+    def __init__(self, chunk_size: int = 1000, chunk_overlap: int = 40):
+        self.embeddings = SentenceTransformerEmbeddings()
         self.processed_dir = "data/processed"
+        self.qdrant_api_key = os.getenv("QDRANT_API_KEY")
+        self.qdrant_url = os.getenv("QDRANT_URL")
+        self.collection_name = os.getenv("QDRANT_COLLECTION_NAME") or "youtube_transcription"
+        self.qdrant = None
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
 
     def tokenize(
         self,
-        client: Qdrant,
-        names: list[str],
-        transcriptions: list[str],
-        chunk_size: int = 1000,
+        transcriptions: list[Document],
     ):
 
-        objects: list[dict[str, str]] = []
-
-        for iter, transcription in enumerate(transcriptions):
-            name = names[iter]
-            for i in range(0, len(transcription), chunk_size):
-                chunk = transcription[i : i + chunk_size]
-                obj = {"name": name, "text": chunk}
-                objects.append(obj)
-
-        print("Loaded texts {}".format(len(transcriptions)))
-
+        documents = self.split_transcriptions(transcriptions)
         try:
-            coll = client.get_collection()
-            if coll is None:
-                print("Collection does not exist")
-                raise Exception()
-        except:
-            print("Creating collection")
-            client.create_collection(self.encoder.get_sentence_embedding_dimension())
+            self.qdrant = Qdrant.from_documents(
+                documents=documents,
+                embedding=self.embeddings,
+                collection_name=self.collection_name,
+                api_key=self.qdrant_api_key,
+                url=self.qdrant_url,
+            )
+        except Exception as e:
+            print(f"Error saving to Qdrant: {e}")
+            exit(1)
 
-        client.upload_points(
-            points=[
-                PointStruct(
-                    vector=self.encoder.encode(obj["text"]),  # type: ignore
-                    payload={"name": obj["name"], "text": obj["text"]},
-                    id=str(uuid.uuid4()),
-                )
-                for _, obj in enumerate(objects)
-            ],
+    def split_transcriptions(self, transcriptions: list[Document]) -> list[Document]:
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap
         )
+        return text_splitter.split_documents(transcriptions)
