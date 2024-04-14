@@ -9,11 +9,12 @@ class Qdrant:
 
     def __init__(self):
         config = QdrantConfig()
-        url = config.get_url()
-        api_key = config.get_api_key()
         try:
-            self.client = QdrantClient(url=url, api_key=api_key)
+            self.client = QdrantClient(
+                url=config.get_url(), api_key=config.get_api_key()
+            )
             self.collection = config.get_collection()
+            self.config = config
         except Exception as e:
             print(f"Error connecting to Qdrant: {e}")
             raise e

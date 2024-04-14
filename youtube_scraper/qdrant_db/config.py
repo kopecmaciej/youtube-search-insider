@@ -11,7 +11,7 @@ class QdrantConfig:
         if api_key is None:
             raise Exception("QDRANT_API_KEY is not set")
         self.api_key = api_key
-        collection = os.getenv("QDRANT_COLLECTION")
+        collection = os.getenv("QDRANT_COLLECTION_NAME")
         if collection is None:
             raise Exception("QDRANT_COLLECTION is not set")
         self.collection = collection
