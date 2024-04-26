@@ -8,7 +8,7 @@ from processor.transcript import Transcriptor
 from processor.cleaner import TextCleaner
 from processor.tokenize import Tokenizer
 from shared.amqp.client import RabbitMQClient
-from shell.flags import Flags
+from shared.shell.flags import Flags
 
 
 async def main(rabbitmq_client: RabbitMQClient):

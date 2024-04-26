@@ -2,8 +2,8 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_community.vectorstores.qdrant import Qdrant
 from langchain_core.documents import Document
-from youtube_scraper.qdrant_db.config import QdrantConfig
-from youtube_scraper.qdrant_db.langchain import get_langchain_qdrant
+from shared.qdrant_db.config import QdrantConfig
+from shared.qdrant_db.langchain import get_langchain_qdrant
 
 
 class Tokenizer:

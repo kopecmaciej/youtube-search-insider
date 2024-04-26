@@ -1,5 +1,5 @@
 from langchain_community.vectorstores.qdrant import Qdrant
-from youtube_scraper.qdrant_db.client import Qdrant as QdrantClient
+from shared.qdrant_db.client import Qdrant as QdrantClient
 from langchain_core.embeddings import Embeddings
 
 

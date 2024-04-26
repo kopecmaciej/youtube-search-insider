@@ -8,7 +8,7 @@ class Flags:
         self.parser = argparse.ArgumentParser(prog="Youtube Scraper")
         self.add_flags()
 
-    def get_flags(self):
+    def get_parser(self):
         return self.parser
 
     def add_flags(self):
@@ -25,6 +25,9 @@ class Flags:
             help="List of languages to transcript, e.g. en,es,fr",
             default=["en"],
         )
+
+    def get(self, key) -> str:
+        return self.parser._get_args()[0].__dict__[key]
 
     def parse_args(self):
         return self.parser.parse_args()
